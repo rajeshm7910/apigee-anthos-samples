@@ -117,6 +117,11 @@ apigee-hybrid-abm-w3-001    Ready    <none>   14m   v1.18.6-gke.6600
 apigee-hybrid-abm-w4-001    Ready    <none>   14m   v1.18.6-gke.6600
 ```
 
+#### Install Apigee
+```
+curl -L https://raw.githubusercontent.com/rajeshm7910/apigee-anthos-bm-samples/main/apigee-poc-anthos-bm-gcp-terraform/apigee/install_apigee.sh | sh -
+```
+
 #### Interacting with the cluster via the GCP console
 
 During the setup process, your cluster will be auto-registered in Google Cloud using [Connect](https://cloud.google.com/anthos/multicluster-management/connect/overview). In order to interact with the cluster from the GCP console you must first ***login*** to the cluster.
