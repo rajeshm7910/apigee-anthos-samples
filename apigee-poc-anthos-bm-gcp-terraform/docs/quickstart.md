@@ -117,10 +117,6 @@ apigee-hybrid-abm-w3-001    Ready    <none>   14m   v1.18.6-gke.6600
 apigee-hybrid-abm-w4-001    Ready    <none>   14m   v1.18.6-gke.6600
 ```
 
-#### Install Apigee
-```
-curl -L https://raw.githubusercontent.com/rajeshm7910/apigee-anthos-bm-samples/main/apigee-poc-anthos-bm-gcp-terraform/apigee/install_apigee.sh | sh -
-```
 
 #### Interacting with the cluster via the GCP console
 
@@ -129,6 +125,12 @@ During the setup process, your cluster will be auto-registered in Google Cloud u
 The [Logging into the Anthos bare metal cluster](login.md) explains how you can do it.
 
 ---
+
+### Install Apigee
+```
+curl -L https://raw.githubusercontent.com/rajeshm7910/apigee-anthos-bm-samples/main/apigee-poc-anthos-bm-gcp-terraform/apigee/install_apigee.sh | sh -
+```
+
 ### Cleanup
 
 You can cleanup the cluster setup in two ways:
