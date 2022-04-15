@@ -2,35 +2,43 @@
 
 ### Setup the bare metal infrastructure
 
-1. Clone this repo into the workstation from where the rest of this guide will be followed
+1. Add the Service Account Admin and Key Admin roles to default compute Engine Service account
+```
+export PROJECT_NUMBER=$(gcloud projects list --filter="$(gcloud config get-value project)" --format="value(PROJECT_NUMBER)")
+export PROJECT_ID=$(gcloud config get-value project)
 
-2. Update the `terraform.tfvars.sample` file to include variables specific to your environment
+gcloud projects add-iam-policy-binding ${PROJECT_ID} --member=serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role=roles/iam.serviceAccountAdmin
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} --member=serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role=roles/iam.serviceAccountKeyAdmin
+```
+
+2. Clone this repo into the workstation from where the rest of this guide will be followed
+3. Update the `terraform.tfvars.sample` file to include variables specific to your environment
 ```
 project_id       = "<GOOGLE_CLOUD_PROJECT_ID>"
 region           = "<GOOGLE_CLOUD_REGION_TO_USE>"
 zone             = "<GOOGLE_CLOUD_ZONE_TO_USE>"
 credentials_file = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
 ```
-
-3. Rename the `variables` file to default name used by Terraform for the `variables` file:
+4. Rename the `variables` file to default name used by Terraform for the `variables` file:
 > **Note:** You can skip this step if you run `terraform apply` with the `-var-file` flag
 ```sh
 mv terraform.tfvars.sample terraform.tfvars
 ```
 
-4. Navigate to the root directory of this repository initialize it as a Terraform directory
+5. Navigate to the root directory of this repository initialize it as a Terraform directory
 ```sh
 # this sets up the required Terraform state management configurations, similar to 'git init'
 terraform init
 ```
 
-5. Create a _Terraform_ execution plan
+6. Create a _Terraform_ execution plan
 ```sh
 # compares the state of the resources, verifies the scripts and creates an execution plan
 terraform plan
 ```
 
-6. Apply the changes described in the _Terraform_ script
+7. Apply the changes described in the _Terraform_ script
 ```sh
 # executes the plan on the given provider (i.e: GCP) to reach the desired state of resources
 terraform apply
