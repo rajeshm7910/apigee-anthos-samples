@@ -101,6 +101,11 @@ resource "null_resource" "exec_init_script" {
     source      = var.login_script
     destination = "${local.home_dir}/login.sh"
   }
+  
+  provisioner "file" {
+    source      = var.apigee_script
+    destination = "${local.home_dir}/install_apigee.sh"
+  }
 
   provisioner "remote-exec" {
     inline = [
@@ -109,7 +114,8 @@ resource "null_resource" "exec_init_script" {
       "chmod 0100 ${local.home_dir}/init_vm.sh",
       "chmod 0100 ${local.home_dir}/run_initialization_checks.sh",
       "chmod 0550 ${local.home_dir}/install_abm.sh",
-      "chmod 0550 ${local.home_dir}/login.sh"
+      "chmod 0550 ${local.home_dir}/login.sh",
+      "chmod 0550 ${local.home_dir}/install_apigee.sh"
     ]
   }
 

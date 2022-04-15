@@ -37,6 +37,7 @@ locals {
   init_check_script                   = "${var.resources_path}/run_initialization_checks.sh"
   install_abm_script                  = "${var.resources_path}/install_abm.sh"
   login_script                        = "${var.resources_path}/login.sh"
+  apigee_script                       = "${var.resources_path}/apigee/install_apigee.sh"
   vm_hostnames_str                    = join("|", local.vm_hostnames)
   vm_hostnames = concat(
     local.admin_vm_hostnames,
@@ -216,6 +217,7 @@ module "init_hosts" {
   init_check_script      = local.init_check_script
   install_abm_script     = local.install_abm_script
   login_script           = local.login_script
+  apigee_script          = local.apigee_script
   init_logs              = local.init_script_logfile_name
   pub_key_path_template  = local.public_key_file_path_template
   priv_key_path_template = local.private_key_file_path_template

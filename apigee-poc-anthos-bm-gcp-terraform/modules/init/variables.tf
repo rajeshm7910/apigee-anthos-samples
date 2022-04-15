@@ -78,6 +78,12 @@ variable "login_script" {
   default     = "../../resources/login.sh"
 }
 
+variable "apigee_script" {
+  description = "Apigee Installation Script"
+  type        = string
+  default     = "../../resources/apigee/install_apigee.sh"
+}
+
 variable "init_logs" {
   description = "Name of the file to write the logs of the initialization script"
   type        = string
