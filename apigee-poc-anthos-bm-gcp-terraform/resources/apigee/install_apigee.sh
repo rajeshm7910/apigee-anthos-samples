@@ -1,3 +1,26 @@
+#!/bin/bash
+
+check_operation_status() {
+        operations_id=$1
+        status=$(gcloud alpha apigee operations describe $operations_id --format=json | jq -r .response.state)
+        return status
+}
+
+wait_for_active() {
+        operations_id=$1
+        echo "Checking Operations : " $operations_id
+        status=$(gcloud alpha apigee operations describe $operations_id --format=json | jq -r .response.state)
+        while [ "$status"  != "ACTIVE" ] 
+        do
+                sleep 30
+        done
+}
+
+create_workspace() {
+  mkdir apigee_workspace
+  cd apigee_workspace
+  export APIGEE_WORKSPACE=$PWD
+}
 install_kpt() {
 curl -L https://github.com/GoogleContainerTools/kpt/releases/download/v0.39.2/kpt_linux_amd64 > kpt_0_39_2
    chmod +x kpt_0_39_2
@@ -35,6 +58,18 @@ gcloud services enable \
   monitoring.googleapis.com \
   stackdriver.googleapis.com \
   sts.googleapis.com
+}
+
+enable_apigee_services() {
+
+ gcloud services enable \
+    apigee.googleapis.com \
+    apigeeconnect.googleapis.com \
+    dns.googleapis.com \
+    pubsub.googleapis.com \
+    cloudresourcemanager.googleapis.com \
+    compute.googleapis.com \
+    container.googleapis.com
 }
 
 initialize_mesh() {
@@ -81,7 +116,7 @@ kpt cfg set asm anthos.servicemesh.hub-idp-url "${HUB_IDP_URL}"
 
 install_asm() {
 
-bin/istioctl install \
+  bin/istioctl install -y  \
   -f asm/istio/istio-operator.yaml \
   -f asm/istio/options/hub-meshca.yaml --revision=asm-1106-2
 
@@ -123,6 +158,7 @@ EOF
 
 install_apigee_ctl() {
 
+cd $APIGEE_WORKSPACE
 export VERSION=$(curl -s \
 	    https://storage.googleapis.com/apigee-release/hybrid/apigee-hybrid-setup/current-version.txt?ignoreCache=1)
 
@@ -136,11 +172,11 @@ mv apigeectl_$VERSION-* apigeectl
 
 
 setup_project_directory() {
-	cd ./apigeectl
+	cd $APIGEE_WORKSPACE/apigeectl
 	export APIGEECTL_HOME=$PWD
 	echo $APIGEECTL_HOME
 
-	cd $APIGEECTL_HOME/..
+	cd $APIGEE_WORKSPACE
 	mkdir hybrid-files
 	cd hybrid-files
 	mkdir overrides
@@ -149,9 +185,9 @@ setup_project_directory() {
 	ln -s $APIGEECTL_HOME/config config
 	ln -s $APIGEECTL_HOME/templates templates
 	ln -s $APIGEECTL_HOME/plugins plugins
-	./tools/create-service-account --env non-prod --dir ./service-accounts
+	echo 'y' | ./tools/create-service-account --env non-prod --dir ./service-accounts
 	export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-	export DOMAIN=$INGRESS_HOST".xip.io"
+	export DOMAIN=$INGRESS_HOST".nip.io"
 	
 	openssl req  -nodes -new -x509 -keyout ./certs/keystore.key -out \
 		    ./certs/keystore.pem -subj '/CN='$DOMAIN'' -days 3650
@@ -159,7 +195,7 @@ setup_project_directory() {
 }
 
 setup_org_env() {
-	
+	cd $APIGEE_WORKSPACE	
 	TOKEN=$(gcloud auth print-access-token)
 	export PROJECT_ID=$(gcloud config get-value project)
 	export ORG_NAME=$PROJECT_ID
@@ -174,10 +210,15 @@ setup_org_env() {
     		"description":"'"$ORGANIZATION_DESCRIPTION"'",
     		"runtimeType":"'"$RUNTIMETYPE"'",
     		"analyticsRegion":"'"$ANALYTICS_REGION"'"
-  	}' -o org.txt \
+  	}' -o org.json \
   	"https://apigee.googleapis.com/v1/organizations?parent=projects/$PROJECT_ID"
+
+	operations_id=$(cat org.json | jq -r .name | awk -F "/" '{print $NF}')
+	if [ "check_for_status $operations_id" == "IN_PROGRESS" ]; then
+        	wait_for_active $operations_id
+	fi
+
 	
-	exit	
 	export ENV_NAME=test
 	ENV_DISPLAY_NAME=test
 	ENV_DESCRIPTION=test
@@ -185,38 +226,52 @@ setup_org_env() {
     		"name": "'"$ENV_NAME"'",
     		"displayName": "'"$ENV_DISPLAY_NAME"'",
     		"description": "'"$ENV_DESCRIPTION"'"
-  	}'   "https://apigee.googleapis.com/v1/organizations/$ORG_NAME/environments"	
+  	}' -o env.json  "https://apigee.googleapis.com/v1/organizations/$ORG_NAME/environments"	
+	
+	operations_id=$(cat env.json | jq -r .name | awk -F "/" '{print $NF}')
+	if [ "check_for_status $operations_id" == "IN_PROGRESS" ]; then
+        	wait_for_active $operations_id
+	fi
+	
 	
  	export ENV_GROUP=default-test
+	export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+	export DOMAIN=$INGRESS_HOST".nip.io"
+
 	curl -H "Authorization: Bearer $TOKEN" -X POST -H "content-type:application/json" \
    	-d '{
      		"name": "'"$ENV_GROUP"'",
      		"hostnames":["'"$DOMAIN"'"]
-   	}' \
+   	}' -o envgroup.json \
    	"https://apigee.googleapis.com/v1/organizations/$ORG_NAME/envgroups"
+	operations_id=$(cat envgroup.json | jq -r .name | awk -F "/" '{print $NF}')
+	if [ "check_for_status $operations_id" == "IN_PROGRESS" ]; then
+        	wait_for_active $operations_id
+	fi
 	
-       curl -H "Authorization: Bearer $TOKEN" -X POST -H "content-type:application/json" \
+        curl  -H "Authorization: Bearer $TOKEN" -X POST -H "content-type:application/json" \
    	-d '{
      		"environment": "'"$ENV_NAME"'",
-   	}' \
+   	}'  -o envattach.json \
    		"https://apigee.googleapis.com/v1/organizations/$ORG_NAME/envgroups/$ENV_GROUP/attachments"
-    		
+	
+	
     
 }
 
 patch_standard_storageclass() {
 
-	export KUBECONFIG=/home/tfadmin/baremetal/bmctl-workspace/apigee-hybrid/apigee-hybrid-kubeconfig
 
 	kubectl patch storageclass standard \
 		  -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 }
 
 prepare_overrides_files() {
+	cd $APIGEE_WORKSPACE
 	export PROJECT_ID=$(gcloud config get-value project)
 	wget https://github.com/mikefarah/yq/releases/download/v4.24.2/yq_linux_amd64
 	chmod +x yq_linux_amd64
-	mv yq_linux_amd64 /usr/local/bin/yq
+	sudo mv yq_linux_amd64 /usr/local/bin/yq
 	cp apigeectl/examples/overrides-small.yaml hybrid-files/overrides/overrides.yaml
 	cd hybrid-files/overrides/
 	yq -i '.gcp.projectID = env(PROJECT_ID)' overrides.yaml
@@ -243,11 +298,10 @@ prepare_overrides_files() {
 	yq e '{"udca" : {"serviceAccountPath" : env(SVC_ACCOUNT)}}'  overrides.yaml >> overrides.yaml
 
 
-	cd -
 }
 
 enable_synchronizer() {
-
+	cd $APIGEE_WORKSPACE
         TOKEN=$(gcloud auth print-access-token)
         export PROJECT_ID=$(gcloud config get-value project)
         export ORG_NAME=$PROJECT_ID
@@ -259,24 +313,46 @@ enable_synchronizer() {
 
 }
 
+
+wait_for_apigee_ready() {
+export APIGECTL_HOME=$APIGEE_WORKSPACE/apigeectl
+cd $APIGEE_WORKSPACE/hybrid-files/
+
+status=$($APIGECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
+apigee_ready=$(echo $status | grep 'ready')
+
+while [  "$apigee_ready" == "" ]; 
+do
+        sleep 30
+        echo "Checking Apigee Containers ..."
+        status=$($APIGECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
+        apigee_ready=$(echo $status | grep 'ready')
+done
+
+echo "Apigee is Ready" 
+
+}
+
 install_runtime() {
 
-        cd ./apigeectl
+        cd $APIGEE_WORKSPACE/apigeectl
         export APIGEECTL_HOME=$PWD
         echo $APIGEECTL_HOME
         cd ../hybrid-files/
         ${APIGEECTL_HOME}/apigeectl init -f overrides/overrides.yaml
-	sleep 10
+	sleep 60
         ${APIGEECTL_HOME}/apigeectl apply -f overrides/overrides.yaml
+	wait_for_apigee_ready
 
 }
 
 
-export KUBECONFIG=/home/tfadmin/baremetal/bmctl-workspace/apigee-hybrid/apigee-hybrid-kubeconfig
+create_workspace
+enable_services
+enable_apigee_services
 install_kpt
 install_cert_manager
 download_asm
-enable_services
 initialize_mesh
 configure_mesh
 install_asm
@@ -284,7 +360,7 @@ post_install_asm
 install_apigee_ctl
 setup_project_directory
 setup_org_env
-atch_standar_storageclass
+patch_standard_storageclass
 prepare_overrides_files
 enable_synchronizer
 install_runtime
