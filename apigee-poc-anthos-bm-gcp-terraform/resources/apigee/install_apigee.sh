@@ -318,8 +318,8 @@ export APIGEECTL_HOME=$APIGEE_WORKSPACE/apigeectl
 cd $APIGEE_WORKSPACE/hybrid-files/
 
 status=$($APIGEECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
-#apigee_ready=$(echo $status | grep 'All containers are ready.')
-apigee_ready=""
+apigee_ready=$(echo $status | grep 'All containers are ready.')
+#apigee_ready=""
 
 while [  "$apigee_ready" == "" ]; 
 do
