@@ -1,22 +1,22 @@
 #!/bin/bash
 
-check_operation_status() {
-        operations_id=$1
-        status=$(gcloud alpha apigee operations describe $operations_id --format=json | jq -r .response.state)
-        return status
-}
 
 wait_for_active() {
         operations_id=$1
+	if [ $operations_id != null ]; then
         echo "Checking Operations : " $operations_id
         status=$(gcloud alpha apigee operations describe $operations_id --format=json | jq -r .response.state)
-        while [ "$status"  != "ACTIVE" ] 
+        while [ "$status"  != "ACTIVE"  ] 
         do
                 sleep 30
+        	echo "Checking Operations : " $operations_id
+        	status=$(gcloud alpha apigee operations describe $operations_id --format=json | jq -r .response.state)
         done
+	fi
 }
 
 create_workspace() {
+  export KUBECONFIG=$PWD/bmctl-workspace/apigee-hybrid/apigee-hybrid-kubeconfig
   mkdir apigee_workspace
   cd apigee_workspace
   export APIGEE_WORKSPACE=$PWD
@@ -185,7 +185,11 @@ setup_project_directory() {
 	ln -s $APIGEECTL_HOME/config config
 	ln -s $APIGEECTL_HOME/templates templates
 	ln -s $APIGEECTL_HOME/plugins plugins
+	#Lets do cleaup first
+	export PROJECT_ID=$(gcloud config get-value project)
+	#gcloud iam service-accounts delete  apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
 	echo 'y' | ./tools/create-service-account --env non-prod --dir ./service-accounts
+	gcloud iam service-accounts keys create ./service-accounts/$PROJECT_ID-apigee-non-prod.json --iam-account=apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
 	export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 	export DOMAIN=$INGRESS_HOST".nip.io"
 	
@@ -214,9 +218,7 @@ setup_org_env() {
   	"https://apigee.googleapis.com/v1/organizations?parent=projects/$PROJECT_ID"
 
 	operations_id=$(cat org.json | jq -r .name | awk -F "/" '{print $NF}')
-	if [ "check_for_status $operations_id" == "IN_PROGRESS" ]; then
-        	wait_for_active $operations_id
-	fi
+        wait_for_active $operations_id
 
 	
 	export ENV_NAME=test
@@ -229,9 +231,7 @@ setup_org_env() {
   	}' -o env.json  "https://apigee.googleapis.com/v1/organizations/$ORG_NAME/environments"	
 	
 	operations_id=$(cat env.json | jq -r .name | awk -F "/" '{print $NF}')
-	if [ "check_for_status $operations_id" == "IN_PROGRESS" ]; then
-        	wait_for_active $operations_id
-	fi
+        wait_for_active $operations_id
 	
 	
  	export ENV_GROUP=default-test
@@ -245,9 +245,8 @@ setup_org_env() {
    	}' -o envgroup.json \
    	"https://apigee.googleapis.com/v1/organizations/$ORG_NAME/envgroups"
 	operations_id=$(cat envgroup.json | jq -r .name | awk -F "/" '{print $NF}')
-	if [ "check_for_status $operations_id" == "IN_PROGRESS" ]; then
-        	wait_for_active $operations_id
-	fi
+        wait_for_active $operations_id
+	
 	
         curl  -H "Authorization: Bearer $TOKEN" -X POST -H "content-type:application/json" \
    	-d '{
@@ -315,18 +314,19 @@ enable_synchronizer() {
 
 
 wait_for_apigee_ready() {
-export APIGECTL_HOME=$APIGEE_WORKSPACE/apigeectl
+export APIGEECTL_HOME=$APIGEE_WORKSPACE/apigeectl
 cd $APIGEE_WORKSPACE/hybrid-files/
 
-status=$($APIGECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
-apigee_ready=$(echo $status | grep 'ready')
+status=$($APIGEECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
+#apigee_ready=$(echo $status | grep 'All containers are ready.')
+apigee_ready=""
 
 while [  "$apigee_ready" == "" ]; 
 do
         sleep 30
         echo "Checking Apigee Containers ..."
-        status=$($APIGECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
-        apigee_ready=$(echo $status | grep 'ready')
+        status=$($APIGEECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
+        apigee_ready=$(echo $status | grep 'All containers are ready.')
 done
 
 echo "Apigee is Ready" 
@@ -339,8 +339,10 @@ install_runtime() {
         export APIGEECTL_HOME=$PWD
         echo $APIGEECTL_HOME
         cd ../hybrid-files/
+	kubectl create namespace apigee
+	kubectl create namespace apigee-system
         ${APIGEECTL_HOME}/apigeectl init -f overrides/overrides.yaml
-	sleep 60
+	sleep 30
         ${APIGEECTL_HOME}/apigeectl apply -f overrides/overrides.yaml
 	wait_for_apigee_ready
 

@@ -137,6 +137,7 @@ variable "anthos_service_account_name" {
   default     = "baremetal-gcr"
 }
 
+
 variable "primary_apis" {
   description = "List of primary Google Cloud APIs to be enabled for this deployment"
   type        = list(string)
@@ -175,6 +176,12 @@ variable "gce_vm_service_account" {
   description = "Service Account to use for GCE instances"
   type        = string
   default     = ""
+}
+
+variable "admin_vm_service_account" {
+  description = "Service Account to use for GCE instances"
+  type        = string
+  default     = "baremetal-owner"
 }
 
 variable "mode" {
