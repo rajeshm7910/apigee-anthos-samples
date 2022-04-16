@@ -35,7 +35,9 @@ The installation requires a network with name as default. If default network cre
 
 ![Default Network](docs/images/default_network.png)
 
-- 
+- Quota Check 
+
+The demo Apigee instance requires 5 VMs with n1-standard-8 machine type. Please ensure there are enough quota set for CPU,Memory, IP Addresses for the region you are hosting the project.
 
 ### Bare metal infrastructure on Google Cloud using Compute Engine VMs
 
