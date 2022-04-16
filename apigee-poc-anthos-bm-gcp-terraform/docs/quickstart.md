@@ -67,7 +67,7 @@ sudo bmctl create cluster -c apigee-hybrid && \
 ```
 ---
 
-Running the commands from the Terraform output starts setting up a new Anthos cluster. This includes checking the initialization state of the nodes, creating the admin and user clusters and also registering the cluster with Google Cloud using [Connect](https://cloud.google.com/anthos/multicluster-management/connect/overview). The whole setup can take up to 15 minutes. You see the following output as the cluster is being created:
+Running the commands from the Terraform output starts setting up a new Anthos cluster. This includes checking the initialization state of the nodes, creating the admin and user clusters and also registering the cluster with Google Cloud using [Connect](https://cloud.google.com/anthos/multicluster-management/connect/overview). The whole setup can take up to 30 minutes. You see the following output as the cluster is being created:
 
 > **Note:** The logs for checks on node initialization has been left out. They appear before the following logs from Anthos setup
 
@@ -135,10 +135,6 @@ The [Logging into the Anthos bare metal cluster](login.md) explains how you can 
 
 ---
 
-### Install Apigee
-```
-curl -L https://raw.githubusercontent.com/rajeshm7910/apigee-anthos-bm-samples/main/apigee-poc-anthos-bm-gcp-terraform/apigee/install_apigee.sh | sh -
-```
 
 ### Cleanup
 
