@@ -17,6 +17,7 @@ wait_for_active() {
 
 create_workspace() {
   export KUBECONFIG=$PWD/bmctl-workspace/apigee-hybrid/apigee-hybrid-kubeconfig
+  echo "KUBECONFIG=$KUBECONFIG" >> ~/.bashrc
   mkdir apigee_workspace
   cd apigee_workspace
   export APIGEE_WORKSPACE=$PWD
@@ -187,9 +188,9 @@ setup_project_directory() {
 	ln -s $APIGEECTL_HOME/plugins plugins
 	#Lets do cleaup first
 	export PROJECT_ID=$(gcloud config get-value project)
-	#gcloud iam service-accounts delete  apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
+	gcloud iam service-accounts delete  apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
 	echo 'y' | ./tools/create-service-account --env non-prod --dir ./service-accounts
-	gcloud iam service-accounts keys create ./service-accounts/$PROJECT_ID-apigee-non-prod.json --iam-account=apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
+	#gcloud iam service-accounts keys create ./service-accounts/$PROJECT_ID-apigee-non-prod.json --iam-account=apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
 	export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 	export DOMAIN=$INGRESS_HOST".nip.io"
 	
@@ -317,6 +318,7 @@ wait_for_apigee_ready() {
 export APIGEECTL_HOME=$APIGEE_WORKSPACE/apigeectl
 cd $APIGEE_WORKSPACE/hybrid-files/
 
+echo "Checking Apigee Containers ..."
 status=$($APIGEECTL_HOME/apigeectl check-ready -f overrides/overrides.yaml 2>&1)
 apigee_ready=$(echo $status | grep 'All containers are ready.')
 #apigee_ready=""
