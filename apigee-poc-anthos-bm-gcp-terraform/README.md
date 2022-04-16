@@ -17,17 +17,16 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
   - The Service Account has both `Editor` and `Project IAM Admin` permissions
 - Organizational Policy Constraints :
 
-| Tables        | Are           | Cool  |
-| ------------- |:-------------:| -----:|
-| col 3 is      | right-aligned | $1600 |
-| col 2 is      | centered      |   $12 |
-| zebra stripes | are neat      |    $1 |
 
 
   |  Policy Name | Constraint Name | Effective Polciy |
 | --- | --- | --- |
-| Disable service account creation | constraints/iam.disableServiceAccountCreation	 | Not Enforced |
-| Disable service account key creation | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced |
+| Disable service account creation             | constraints/iam.disableServiceAccountCreation	   | Not Enforced |
+| Disable service account key creation         | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced |
+| Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All  | 
+| Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All  |
+| Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced |
+| Require OS Login                             | cconstraints/compute.requireOsLogin	             | Not Enforced |
 - 
 
 
