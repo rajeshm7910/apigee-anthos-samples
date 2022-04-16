@@ -17,7 +17,8 @@ wait_for_active() {
 
 create_workspace() {
   export KUBECONFIG=$PWD/bmctl-workspace/apigee-hybrid/apigee-hybrid-kubeconfig
-  echo "KUBECONFIG=$KUBECONFIG" >> ~/.bashrc
+  echo "export KUBECONFIG=$KUBECONFIG" >> ~/.bashrc
+  echo "export KUBECONFIG=$KUBECONFIG" >> /home/tfadmin/.bashrc
   mkdir apigee_workspace
   cd apigee_workspace
   export APIGEE_WORKSPACE=$PWD
@@ -217,6 +218,9 @@ setup_org_env() {
     		"analyticsRegion":"'"$ANALYTICS_REGION"'"
   	}' -o org.json \
   	"https://apigee.googleapis.com/v1/organizations?parent=projects/$PROJECT_ID"
+
+	echo "Waiting for initial 60 seconds ...."
+	sleep 60
 
 	operations_id=$(cat org.json | jq -r .name | awk -F "/" '{print $NF}')
         wait_for_active $operations_id

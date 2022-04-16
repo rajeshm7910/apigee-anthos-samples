@@ -26,6 +26,8 @@ bmctl create config -c "$CLUSTER_ID"
 cp "$DIR/$CLUSTER_ID".yaml "$DIR/bmctl-workspace/$CLUSTER_ID"
 # create the Anthos bare metal cluster
 bmctl create cluster -c "$CLUSTER_ID"
+# Install Apigee Hybrid"
+"$DIR"/install_apigee.sh
 
 echo "Anthos on bare metal installation complete!"
 echo "Run [export KUBECONFIG=$DIR/bmctl-workspace/$CLUSTER_ID/$CLUSTER_ID-kubeconfig] to set the kubeconfig"
