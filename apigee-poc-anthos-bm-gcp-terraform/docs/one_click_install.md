@@ -15,7 +15,7 @@ We can force the terraform run to continue onto the Anthos on bare metal install
 _(after creating the GCE VMs)_ by setting the variable `mode` to `install`.
 
 ### Pre-requisites
-- This guide has the [same pre-requisites as the quickstart guide](/anthos-bm-gcp-terraform/README.md#pre-requisites).
+- This guide has the [same pre-requisites as the quickstart guide](/apigee-anthos-bm-samples/README.md#pre-requisites).
 
 ### Step by step guide
 
@@ -34,10 +34,12 @@ cp terraform.tfvars.sample terraform.tfvars
 ```sh
 # terraform.tfvars file
 
-project_id       = "<GOOGLE_CLOUD_PROJECT_ID>"
-region           = "<GOOGLE_CLOUD_REGION_TO_USE>"
-zone             = "<GOOGLE_CLOUD_ZONE_TO_USE>"
-credentials_file = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
+project_id                = "<GOOGLE_CLOUD_PROJECT_ID>"
+region                    = "<GOOGLE_CLOUD_REGION_TO_USE>"
+zone                      = "<GOOGLE_CLOUD_ZONE_TO_USE>"
+credentials_file          = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
+admin_vm_service_account  = "<SERVICE ACCOUNT EMAIL WITH OWNER PERMISSION>"
+
 ```
 
 4. Add the `mode` variable to the `terraform.tfvars` file
