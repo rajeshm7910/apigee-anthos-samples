@@ -60,6 +60,7 @@ gcloud compute ssh tfadmin@apigee-hybrid-abm-ws0-001 --project=<YOUR_PROJECT> --
 ```sh
 sudo ./run_initialization_checks.sh && \
 sudo bmctl create config -c apigee-hybrid && \
+sudo cp ~/apigee-hybrid.yaml bmctl-workspace/apigee-hybrid && \
 sudo bmctl create cluster -c apigee-hybrid && \
 ./install_apigee.sh
 ```
