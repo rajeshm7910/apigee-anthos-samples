@@ -6,8 +6,9 @@
 ```
 export PROJECT_ID=$(gcloud config get-value project)
 gcloud iam service-accounts create baremetal-owner
-gcloud iam service-accounts keys create baremetal-owner.json --iam-account=my-iam-account@$PROJECT_ID.iam.gserviceaccount.com
-gcloud auth activate-service-account --key-file baremetal-owner.json
+gcloud iam service-accounts keys create anthos-bm-owner.json --iam-account=baremetal-owner@$PROJECT_ID.iam.gserviceaccount.com
+gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:baremetal-owner@$PROJECT_ID.iam.gserviceaccount.com --role=roles/owner
+gcloud auth activate-service-account --key-file anthos-bm-owner.json
 ```
 
 2. Clone this repo into the workstation from where the rest of this guide will be followed
