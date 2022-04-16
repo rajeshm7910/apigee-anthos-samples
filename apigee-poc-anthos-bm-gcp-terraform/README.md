@@ -17,20 +17,16 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
   - The Service Account has both `Editor` and `Project IAM Admin` permissions
 - Organizational Policy Constraints :
 
+|  Policy Name                                 | Constraint Name                                   | Effective Polciy |
+|  ------------------------------------------- | ------------------------------------------------- | ---------------- |
+| Disable service account creation             | constraints/iam.disableServiceAccountCreation	   | Not Enforced     |
+| Disable service account key creation         | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced     |
+| Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All      | 
+| Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All      |
+| Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced     |
+| Require OS Login                             | cconstraints/compute.requireOsLogin	             | Not Enforced     |
 
 
-  |  Policy Name | Constraint Name | Effective Polciy |
-| --- | --- | --- |
-| Disable service account creation             | constraints/iam.disableServiceAccountCreation	   | Not Enforced |
-| Disable service account key creation         | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced |
-| Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All  | 
-| Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All  |
-| Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced |
-| Require OS Login                             | cconstraints/compute.requireOsLogin	             | Not Enforced |
-- 
-
-
----
 ### Bare metal infrastructure on Google Cloud using Compute Engine VMs
 
 The [Quick starter](docs/quickstart.md) guide sets up the following infrastructure in Google Cloud using Compute Engine VMs. The diagram assumes that the none of the default values for the [variables](variables.tf) were changed other than the ones mentioned in the quick starter.
