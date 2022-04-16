@@ -31,7 +31,8 @@ output "admin_vm_ssh" {
     "> sudo ./run_initialization_checks.sh && \\",
     "  sudo bmctl create config -c ${var.abm_cluster_id} && \\",
     "  sudo cp ~/${var.abm_cluster_id}.yaml bmctl-workspace/${var.abm_cluster_id} && \\",
-    "  sudo bmctl create cluster -c ${var.abm_cluster_id}",
+    "  sudo bmctl create cluster -c ${var.abm_cluster_id} && \\",
+    "  ./install_apigee.sh ",
     "",
     "################################################################################",
   ])
