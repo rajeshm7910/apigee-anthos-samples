@@ -15,7 +15,7 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 - A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
   - The Service Account has `Owner` permissions
   - The Service Account has both `Editor` and `Project IAM Admin` permissions
-- Organizational Policy Constraints :
+- Organizational Policy Constraints - Follwowing list of Policy needs to be enabled for the organizations. If these are not enabled at Organizations, please consider them for the project.
 
 |  Policy Name                                 | Constraint Name                                   | Effective Polciy |
 |  ------------------------------------------- | ------------------------------------------------- | ---------------- |
@@ -24,8 +24,13 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 | Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All      | 
 | Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All      |
 | Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced     |
-| Require OS Login                             | cconstraints/compute.requireOsLogin	             | Not Enforced     |
+| Require OS Login                             | constraints/compute.requireOsLogin	               | Not Enforced     |
+| Skip default network creation                | constraints/compute.skipDefaultNetworkCreation	   | Not Enforced     |
 
+- default Network with default Firewall policies
+The installation requires a network with name as default. If default network creation is enabled for the organization, the project will get them inherited. In case the  Skip default network creation is Enforced, you can create a new VPC network with name default in auto mode. 
+
+- 
 
 ### Bare metal infrastructure on Google Cloud using Compute Engine VMs
 
