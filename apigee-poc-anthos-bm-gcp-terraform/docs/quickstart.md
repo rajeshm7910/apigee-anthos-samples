@@ -2,28 +2,22 @@
 
 ### Setup the bare metal infrastructure
 
-1. Add the Service Account Admin and Key Admin roles to default compute Engine Service account
+1. Create a Service Aaccount with Owner Role and download the key file. Activate the Service Account
 ```
-export PROJECT_NUMBER=$(gcloud projects list --filter="$(gcloud config get-value project)" --format="value(PROJECT_NUMBER)")
 export PROJECT_ID=$(gcloud config get-value project)
-
-gcloud projects add-iam-policy-binding ${PROJECT_ID} --member=serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role=roles/iam.serviceAccountAdmin
-
-gcloud projects add-iam-policy-binding ${PROJECT_ID} --member=serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role=roles/iam.serviceAccountKeyAdmin
-
-gcloud projects add-iam-policy-binding ${PROJECT_ID} --member=serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role=roles/compute.instanceAdmin.v1
-
-gcloud projects add-iam-policy-binding ${PROJECT_ID} --member=serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com --role=roles/iam.serviceAccountUser
-
+gcloud iam service-accounts create baremetal-owner
+gcloud iam service-accounts keys create baremetal-owner.json --iam-account=my-iam-account@$PROJECT_ID.iam.gserviceaccount.com
+gcloud auth activate-service-account --key-file baremetal-owner.json
 ```
 
 2. Clone this repo into the workstation from where the rest of this guide will be followed
 3. Update the `terraform.tfvars.sample` file to include variables specific to your environment
 ```
-project_id       = "<GOOGLE_CLOUD_PROJECT_ID>"
-region           = "<GOOGLE_CLOUD_REGION_TO_USE>"
-zone             = "<GOOGLE_CLOUD_ZONE_TO_USE>"
-credentials_file = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
+project_id                = "<GOOGLE_CLOUD_PROJECT_ID>"
+region                    = "<GOOGLE_CLOUD_REGION_TO_USE>"
+zone                      = "<GOOGLE_CLOUD_ZONE_TO_USE>"
+credentials_file          = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
+admin_vm_service_account  = "<SERVICE ACCOUNT EMAIL WITH OWNER PERMISSION>"
 ```
 4. Rename the `variables` file to default name used by Terraform for the `variables` file:
 > **Note:** You can skip this step if you run `terraform apply` with the `-var-file` flag
@@ -67,7 +61,8 @@ gcloud compute ssh tfadmin@apigee-hybrid-abm-ws0-001 --project=<YOUR_PROJECT> --
 sudo ./run_initialization_checks.sh && \
 sudo bmctl create config -c apigee-hybrid && \
 sudo cp ~/apigee-hybrid.yaml bmctl-workspace/apigee-hybrid && \
-sudo bmctl create cluster -c apigee-hybrid
+sudo bmctl create cluster -c apigee-hybrid && \
+./install_apigee.sh
 ```
 ---
 
