@@ -15,7 +15,15 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 - A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
   - The Service Account has `Owner` permissions
   - The Service Account has both `Editor` and `Project IAM Admin` permissions
-- Organizational Policy Constraints : 
+- Organizational Policy Constraints :
+
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| col 3 is      | right-aligned | $1600 |
+| col 2 is      | centered      |   $12 |
+| zebra stripes | are neat      |    $1 |
+
+
   |  Policy Name | Constraint Name | Effective Polciy |
 | --- | --- | --- |
 | Disable service account creation | constraints/iam.disableServiceAccountCreation	 | Not Enforced |
