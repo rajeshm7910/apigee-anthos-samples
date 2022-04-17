@@ -29,19 +29,18 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
  
     * Organizational Policy Constraints 
  
-Follwowing list of Policy needs to be enabled for the organizations. If these are not enabled at Organizations, please consider them for the project.
+      Follwowing list of Policy needs to be enabled for the organizations. If these are not enabled at Organizations, please consider them for the project.
 
-|  Policy Name                                 | Constraint Name                                   | Effective Polciy |
-|  ------------------------------------------- | ------------------------------------------------- | ---------------- |
-| Disable service account creation             | constraints/iam.disableServiceAccountCreation	   | Not Enforced     |
-| Disable service account key creation         | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced     |
-| Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All      | 
-| Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All      |
-| Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced     |
-| Require OS Login                             | constraints/compute.requireOsLogin	               | Not Enforced     |
-| Skip default network creation                | constraints/compute.skipDefaultNetworkCreation	   | Not Enforced     |
+      |  Policy Name                                 | Constraint Name                                   | Effective Polciy |
+      |  ------------------------------------------- | ------------------------------------------------- | ---------------- |
+      | Disable service account creation             | constraints/iam.disableServiceAccountCreation	   | Not Enforced     |
+      | Disable service account key creation         | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced     |
+      | Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All      | 
+      | Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All      |
+      | Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced     |
+      | Require OS Login                             | constraints/compute.requireOsLogin	               | Not Enforced     |
+      | Skip default network creation                | constraints/compute.skipDefaultNetworkCreation	   | Not Enforced     |
 
-A script can execute these constraints.
 
     * default Network with default Firewall policies 
 
