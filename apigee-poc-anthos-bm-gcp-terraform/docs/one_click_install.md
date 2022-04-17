@@ -15,7 +15,7 @@ We can force the terraform run to continue onto the Anthos on bare metal install
 _(after creating the GCE VMs)_ by setting the variable `mode` to `install`.
 
 ### Pre-requisites
-- This guide has the [same pre-requisites as the quickstart guide](/anthos-bm-gcp-terraform/README.md#pre-requisites).
+- This guide has the [same pre-requisites as the quickstart guide](/apigee-anthos-bm-samples/README.md#pre-requisites).
 
 ### Step by step guide
 
@@ -34,10 +34,12 @@ cp terraform.tfvars.sample terraform.tfvars
 ```sh
 # terraform.tfvars file
 
-project_id       = "<GOOGLE_CLOUD_PROJECT_ID>"
-region           = "<GOOGLE_CLOUD_REGION_TO_USE>"
-zone             = "<GOOGLE_CLOUD_ZONE_TO_USE>"
-credentials_file = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
+project_id                = "<GOOGLE_CLOUD_PROJECT_ID>"
+region                    = "<GOOGLE_CLOUD_REGION_TO_USE>"
+zone                      = "<GOOGLE_CLOUD_ZONE_TO_USE>"
+credentials_file          = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
+admin_vm_service_account  = "<SERVICE ACCOUNT EMAIL WITH OWNER PERMISSION>"
+
 ```
 
 4. Add the `mode` variable to the `terraform.tfvars` file
@@ -79,7 +81,7 @@ Upon completion the Terraform script will print the following output to the cons
 #          SSH into the admin host and check the installation progress         #
 ################################################################################
 
-> gcloud compute ssh tfadmin@cluster1-abm-ws0-001 --project=<YOUR_PROJECT> --zone=<YOUR_ZONE>
+> gcloud compute ssh tfadmin@apigee-hybrid-abm-ws0-001 --project=<YOUR_PROJECT> --zone=<YOUR_ZONE>
 > tail -f ~/install_abm.log
 
 ################################################################################
@@ -99,7 +101,7 @@ Once it is complete the output in the log file will look as follows:
 [2022-03-22 23:22:48+0000] Deleting bootstrap cluster... OK
 
 Anthos on bare metal installation complete!
-Run [export KUBECONFIG=/home/tfadmin/bmctl-workspace/cluster1/cluster1-kubeconfig] to set the kubeconfig
+Run [export KUBECONFIG=/home/tfadmin/bmctl-workspace/apigee-hybrid/apigee-hybrid-kubeconfig] to set the kubeconfig
 Run the [/home/tfadmin/login.sh] script to generate a token that you can use to login to the cluster from the Google Cloud Console
 ```
 ---
@@ -109,7 +111,7 @@ You can find your cluster's `kubeconfig` file on the admin machine in the `bmctl
 
 1. Set the `KUBECONFIG` environment variable with the path to the cluster's configuration file to run `kubectl` commands on the cluster.
 ```sh
-export CLUSTER_ID=cluster1
+export CLUSTER_ID=apigee-hybrid
 export KUBECONFIG=$HOME/bmctl-workspace/$CLUSTER_ID/$CLUSTER_ID-kubeconfig
 kubectl get nodes
 ```
@@ -117,11 +119,12 @@ kubectl get nodes
 You should see the nodes of the cluster printed, _similar_ to the output below:
 ```sh
 NAME          STATUS   ROLES    AGE   VERSION
-cluster1-abm-cp1-001   Ready    master   17m   v1.18.6-gke.6600
-cluster1-abm-cp2-001   Ready    master   16m   v1.18.6-gke.6600
-cluster1-abm-cp3-001   Ready    master   16m   v1.18.6-gke.6600
-cluster1-abm-w1-001    Ready    <none>   14m   v1.18.6-gke.6600
-cluster1-abm-w2-001    Ready    <none>   14m   v1.18.6-gke.6600
+apigee-hybrid-abm-cp1-001   Ready    master   17m   v1.18.6-gke.6600
+apigee-hybrid-abm-w1-001    Ready    <none>   14m   v1.18.6-gke.6600
+apigee-hybrid-abm-w2-001    Ready    <none>   14m   v1.18.6-gke.6600
+apigee-hybrid-abm-w3-001    Ready    <none>   14m   v1.18.6-gke.6600
+apigee-hybrid-abm-w4-001    Ready    <none>   14m   v1.18.6-gke.6600
+apigee-hybrid-abm-ws0-001   Ready    <none>   14m   v1.18.6-gke.6600
 ```
 
 #### Interacting with the cluster via the GCP console
