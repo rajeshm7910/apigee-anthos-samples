@@ -4,7 +4,9 @@ export project=$(gcloud config get-value project)
 
 enable_services() {
 	gcloud services enable \
-  		cloudresourcemanager.googleapis.com 
+  		cloudresourcemanager.googleapis.com \
+		compute.googleapis.com \
+		apigee.googleapis.com
 
 
 }
