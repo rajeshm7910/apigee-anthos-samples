@@ -2,6 +2,13 @@
 
 export project=$(gcloud config get-value project)
 
+enable_services() {
+	gcloud services enable \
+  		cloudresourcemanager.googleapis.com 
+
+
+}
+
 apply_constraints() {
 
 	gcloud beta resource-manager org-policies disable-enforce compute.requireShieldedVm --project=${project}
@@ -28,9 +35,21 @@ listPolicy:
 EOF
 	gcloud resource-manager org-policies set-policy new_policy.yaml --project="${project}"
 	done
+
+echo "Allow upto 30 seconds to Propagate the policy changes"
+sleep 30
+echo "Policy Changes done"
+}
+
+create_network() {
+	echo "Creating default Network"
+	gcloud compute networks create default --project=$project --subnet-mode=auto --mtu=1460 --bgp-routing-mode=regional
+	echo "default Network is Created"
+
 }
 
 apply_firewall_policies() {
+	echo "Creating Firewall rules"
 
 	gcloud compute firewall-rules create default-allow-ssh --network default --allow tcp:22 --source-ranges 0.0.0.0/0
 	gcloud compute firewall-rules create default-allow-rdp --network default --allow tcp:3389 --source-ranges 0.0.0.0/0
@@ -40,5 +59,18 @@ apply_firewall_policies() {
 
 }
 
+create_owner_service_account() {
+	echo "Creating Owner Service Account"
+
+	gcloud iam service-accounts create baremetal-owner
+	gcloud iam service-accounts keys create anthos-bm-owner.json --iam-account=baremetal-owner@${project}.iam.gserviceaccount.com
+	gcloud projects add-iam-policy-binding ${project} --member=serviceAccount:baremetal-owner@${project}.iam.gserviceaccount.com --role=roles/owner
+	gcloud auth activate-service-account --key-file anthos-bm-owner.json
+
+}
+
+enable_services
 apply_constraints
+create_network
 apply_firewall_policies
+create_owner_service_account
