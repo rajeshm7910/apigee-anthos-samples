@@ -567,6 +567,18 @@ You can cleanup the cluster setup in two ways:
   # to be run from the root directory of this repo
   terraform destroy --auto-approve
   ```
+ - Deregister cluster from the Cloud hub membership.
+ - Delete Apigee Organization.
+ ```sh
+     gcloud alpha apigee organizations delete <YOUR_PROJECT>
+ ```
 
 #### 2. Delete the entire Google Cloud project
 - Directly [delete the project](https://console.cloud.google.com/cloud-resource-manager) from the console
+
+#### 3. Clean Temporary files
+- Clean temporary files 
+```sh
+    rm -fr ./resources/.temp
+    rm -fr terraform.tfstate
+```
