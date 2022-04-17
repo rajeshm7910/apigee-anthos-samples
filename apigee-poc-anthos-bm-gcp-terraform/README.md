@@ -41,6 +41,11 @@ The installation requires a network with name as default. If default network cre
 
 The demo Apigee instance requires 5 VMs with n1-standard-8 machine type. Please ensure there are enough quota set for CPU,Memory, IP Addresses for the region you are hosting the project.
 
+- Prerequisite Script - A script is provided under resources folder that can execute these prerequisites. 
+```bash
+./resources/run_prerequisite.sh
+```
+
 ### Bare metal infrastructure on Google Cloud using Compute Engine VMs
 
 The [Quick starter](docs/quickstart.md) guide sets up the following infrastructure in Google Cloud using Compute Engine VMs. The diagram assumes that the none of the default values for the [variables](variables.tf) were changed other than the ones mentioned in the quick starter.
