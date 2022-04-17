@@ -2,7 +2,7 @@
 
 ### Setup the bare metal infrastructure
 
-1. Create a Service Aaccount with Owner Role and download the key file. Activate the Service Account
+1. Create a Service Aaccount with Owner Role and download the key file. Activate the Service Account. If you have executed ./resources/run_prerequisite.sh , verify that you have the key file downloaded and service account is created with right permission.
 ```
 export PROJECT_ID=$(gcloud config get-value project)
 gcloud iam service-accounts create baremetal-owner
@@ -19,7 +19,11 @@ region                    = "<GOOGLE_CLOUD_REGION_TO_USE>"
 zone                      = "<GOOGLE_CLOUD_ZONE_TO_USE>"
 credentials_file          = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
 admin_vm_service_account  = "<SERVICE ACCOUNT EMAIL WITH OWNER PERMISSION>"
+#mode                     = "install"
 ```
+
+Uncomment the mode to make installation in auto mode. More about that in section [here](./one_click_install.md).
+
 4. Rename the `variables` file to default name used by Terraform for the `variables` file:
 > **Note:** You can skip this step if you run `terraform apply` with the `-var-file` flag
 ```sh

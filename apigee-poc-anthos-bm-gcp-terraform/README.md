@@ -14,32 +14,45 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 
 - Compute Engine API Services should be enabled for the project.
 
-- A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
+- Prerequisite Script - A script is provided under resources folder that can execute  prerequisites. 
+```bash
+./resources/run_prerequisite.sh
+```
+
+- Execute Prerequisite manually 
+
+    * A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
   - The Service Account has `Owner` permissions
   - The Service Account has both `Editor` and `Project IAM Admin` permissions
-- Organizational Policy Constraints 
  
-Follwowing list of Policy needs to be enabled for the organizations. If these are not enabled at Organizations, please consider them for the project.
+  The scripts to create service account and key creation is also mentioned in Quickstart module. 
+ 
+    * Organizational Policy Constraints 
+ 
+      Follwowing list of Policy needs to be enabled for the organizations. If these are not enabled at Organizations, please consider them for the project.
 
-|  Policy Name                                 | Constraint Name                                   | Effective Polciy |
-|  ------------------------------------------- | ------------------------------------------------- | ---------------- |
-| Disable service account creation             | constraints/iam.disableServiceAccountCreation	   | Not Enforced     |
-| Disable service account key creation         | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced     |
-| Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All      | 
-| Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All      |
-| Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced     |
-| Require OS Login                             | constraints/compute.requireOsLogin	               | Not Enforced     |
-| Skip default network creation                | constraints/compute.skipDefaultNetworkCreation	   | Not Enforced     |
+      |  Policy Name                                 | Constraint Name                                   | Effective Polciy |
+      |  ------------------------------------------- | ------------------------------------------------- | ---------------- |
+      | Disable service account creation             | constraints/iam.disableServiceAccountCreation	   | Not Enforced     |
+      | Disable service account key creation         | constraints/iam.disableServiceAccountKeyCreation	 | Not enforced     |
+      | Restrict VM IP Forwarding                    | constraints/compute.vmCanIpForward	               | Allowed All      | 
+      | Define allowed external IPs for VM instances | constraints/compute.vmExternalIpAccess	           | Allowed All      |
+      | Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced     |
+      | Require OS Login                             | constraints/compute.requireOsLogin	               | Not Enforced     |
+      | Skip default network creation                | constraints/compute.skipDefaultNetworkCreation	   | Not Enforced     |
 
-- default Network with default Firewall policies 
 
-The installation requires a network with name as default. If default network creation is enabled for the organization, the project will get them inherited. In case the  Skip default network creation is Enforced, you can create a new VPC network with name default in auto mode. 
+    * default Network with default Firewall policies 
 
-![Default Network](docs/images/default_network.png)
+      The installation requires a network with name as default. If default network creation is enabled for the organization, the project will get them inherited. In case the  Skip default network creation is Enforced, you can create a new VPC network with name default in auto mode. 
 
-- Quota Check 
+      ![Default Network](docs/images/default_network.png)
+
+    * Quota Check 
 
 The demo Apigee instance requires 5 VMs with n1-standard-8 machine type. Please ensure there are enough quota set for CPU,Memory, IP Addresses for the region you are hosting the project.
+
+
 
 ### Bare metal infrastructure on Google Cloud using Compute Engine VMs
 
