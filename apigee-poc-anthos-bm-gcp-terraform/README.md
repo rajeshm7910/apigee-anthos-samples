@@ -14,10 +14,20 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 
 - Compute Engine API Services should be enabled for the project.
 
-- A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
+-- A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
   - The Service Account has `Owner` permissions
   - The Service Account has both `Editor` and `Project IAM Admin` permissions
-- Organizational Policy Constraints 
+ 
+ The scripts to create service account and key creation is mentioned in Quickstart module. 
+
+- Prerequisite Script - A script is provided under resources folder that can execute  prerequisites. 
+```bash
+./resources/run_prerequisite.sh
+```
+
+- Execute Prerequisite manually 
+
+-- Organizational Policy Constraints 
  
 Follwowing list of Policy needs to be enabled for the organizations. If these are not enabled at Organizations, please consider them for the project.
 
@@ -31,20 +41,17 @@ Follwowing list of Policy needs to be enabled for the organizations. If these ar
 | Require OS Login                             | constraints/compute.requireOsLogin	               | Not Enforced     |
 | Skip default network creation                | constraints/compute.skipDefaultNetworkCreation	   | Not Enforced     |
 
-- default Network with default Firewall policies 
+-- default Network with default Firewall policies 
 
 The installation requires a network with name as default. If default network creation is enabled for the organization, the project will get them inherited. In case the  Skip default network creation is Enforced, you can create a new VPC network with name default in auto mode. 
 
 ![Default Network](docs/images/default_network.png)
 
-- Quota Check 
+-- Quota Check 
 
 The demo Apigee instance requires 5 VMs with n1-standard-8 machine type. Please ensure there are enough quota set for CPU,Memory, IP Addresses for the region you are hosting the project.
 
-- Prerequisite Script - A script is provided under resources folder that can execute these prerequisites. 
-```bash
-./resources/run_prerequisite.sh
-```
+
 
 ### Bare metal infrastructure on Google Cloud using Compute Engine VMs
 
