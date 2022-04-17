@@ -14,12 +14,6 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 
 - Compute Engine API Services should be enabled for the project.
 
--- A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
-  - The Service Account has `Owner` permissions
-  - The Service Account has both `Editor` and `Project IAM Admin` permissions
- 
- The scripts to create service account and key creation is mentioned in Quickstart module. 
-
 - Prerequisite Script - A script is provided under resources folder that can execute  prerequisites. 
 ```bash
 ./resources/run_prerequisite.sh
@@ -27,6 +21,12 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 
 - Execute Prerequisite manually 
 
+-- A [Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts) in the project that satisfies **one** of the following requirements and its **[key file downloaded](docs/create_sa_key.md)** to the workstation:
+  - The Service Account has `Owner` permissions
+  - The Service Account has both `Editor` and `Project IAM Admin` permissions
+ 
+  The scripts to create service account and key creation is also mentioned in Quickstart module. 
+ 
 -- Organizational Policy Constraints 
  
 Follwowing list of Policy needs to be enabled for the organizations. If these are not enabled at Organizations, please consider them for the project.
