@@ -40,6 +40,7 @@ Follwowing list of Policy needs to be enabled for the organizations. If these ar
 | Shielded VMs                                 | constraints/compute.requireShieldedVm	           | Not Enforced     |
 | Require OS Login                             | constraints/compute.requireOsLogin	               | Not Enforced     |
 | Skip default network creation                | constraints/compute.skipDefaultNetworkCreation	   | Not Enforced     |
+-
 
     * default Network with default Firewall policies 
 
