@@ -12,7 +12,7 @@ This repository shows you how to use Terraform to try Anthos clusters on bare me
 
 - A [Google Cloud Project](https://console.cloud.google.com/cloud-resource-manager?_ga=2.187862184.1029435410.1614837439-1338907320.1614299892) _(in which the resources for the setup will be provisioned)_
 
-- Compute Engine API Services should be enabled for the project.
+- Enable Compute Engine API Services and Apigee API Services.
 
 - Prerequisite Script - A script is provided under resources folder that can execute  prerequisites. 
 ```bash
