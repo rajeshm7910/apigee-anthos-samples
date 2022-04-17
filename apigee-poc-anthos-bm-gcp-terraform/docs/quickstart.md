@@ -21,8 +21,18 @@ credentials_file          = "<PATH_TO_GOOGLE_CLOUD_SERVICE_ACCOUNT_FILE>"
 admin_vm_service_account  = "<SERVICE ACCOUNT EMAIL WITH OWNER PERMISSION>"
 #mode                     = "install"
 ```
-
 Uncomment the mode to make installation in auto mode. More about that in section [here](./one_click_install.md).
+
+An example of these configuration looks like this below:
+
+```
+project_id                     = "anthos-bm-example4"
+region                         = "us-central1"
+zone                           = "us-central1-a"
+credentials_file               = "anthos-bm-owner.json"
+admin_vm_service_account       = "baremetal-owner@anthos-bm-example4.iam.gserviceaccount.com"
+mode                           = "install"
+```
 
 4. Rename the `variables` file to default name used by Terraform for the `variables` file:
 > **Note:** You can skip this step if you run `terraform apply` with the `-var-file` flag
