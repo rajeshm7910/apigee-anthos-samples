@@ -164,6 +164,9 @@ cd $APIGEE_WORKSPACE
 export VERSION=$(curl -s \
 	    https://storage.googleapis.com/apigee-release/hybrid/apigee-hybrid-setup/current-version.txt?ignoreCache=1)
 
+#Pinning down to previous version because 1.7 has some issues
+export VERSION="1.6.6"
+
 curl -LO \
 	    https://storage.googleapis.com/apigee-release/hybrid/apigee-hybrid-setup/$VERSION/apigeectl_linux_64.tar.gz
 
