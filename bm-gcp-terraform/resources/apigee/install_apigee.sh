@@ -183,7 +183,7 @@ setup_org_env() {
   	"https://apigee.googleapis.com/v1/organizations?parent=projects/$PROJECT_ID"
 
 	echo "Waiting for initial 60 seconds ...."
-	sleep 10
+	sleep 60
 
 	operations_id=$(cat org.json | jq -r .name | awk -F "/" '{print $NF}')
         wait_for_active $operations_id
