@@ -23,23 +23,13 @@ create_workspace() {
   cd apigee_workspace
   export APIGEE_WORKSPACE=$PWD
 }
-install_kpt() {
-curl -L https://github.com/GoogleContainerTools/kpt/releases/download/v0.39.2/kpt_linux_amd64 > kpt_0_39_2
-   chmod +x kpt_0_39_2
-   # alias kpt="$(readlink -f kpt_0_39_2)"
-   sudo mv kpt_0_39_2 /usr/local/bin/kpt
-}
+
 
 install_cert_manager()
 {
-	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
+	kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.7.2/cert-manager.yaml
 }
 
-download_asm() {
-	curl -LO https://storage.googleapis.com/gke-release/asm/istio-1.10.6-asm.2-linux-amd64.tar.gz
-	tar xzf istio-1.10.6-asm.2-linux-amd64.tar.gz
-	cd istio-1.10.6-asm.2
-}
 
 enable_services() 
 {
@@ -74,87 +64,57 @@ enable_apigee_services() {
     container.googleapis.com
 }
 
-initialize_mesh() {
-IDENTITY_PROVIDER="$(kubectl get memberships.hub.gke.io membership -o=jsonpath='{.spec.identity_provider}')"
 
-IDENTITY="$(echo "${IDENTITY_PROVIDER}" | sed 's/^https:\/\/gkehub.googleapis.com\/projects\/\(.*\)\/locations\/global\/memberships\/\(.*\)$/\1 \2/g')"
-
-read -r ENVIRON_PROJECT_ID HUB_MEMBERSHIP_ID <<EOF
-${IDENTITY}
-EOF
-
-POST_DATA='{"workloadIdentityPools":["'${ENVIRON_PROJECT_ID}'.hub.id.goog","'${ENVIRON_PROJECT_ID}'.svc.id.goog"]}'
-
-curl --request POST \
-  --header "Content-Type: application/json" \
-  --header "Authorization: Bearer $(gcloud auth print-access-token)" \
-  --data "${POST_DATA}" \
-https://meshconfig.googleapis.com/v1alpha1/projects/${ENVIRON_PROJECT_ID}:initialize
-}
-
-configure_mesh() {
-kpt pkg get \
-https://github.com/GoogleCloudPlatform/anthos-service-mesh-packages.git/asm@release-1.10-asm asm
-
-ENVIRON_PROJECT_NUMBER=$(gcloud projects describe "${ENVIRON_PROJECT_ID}" --format="value(projectNumber)")
-
-CLUSTER_NAME="${HUB_MEMBERSHIP_ID}"
-
-CLUSTER_LOCATION="global"
-
-HUB_IDP_URL="$(kubectl get memberships.hub.gke.io membership -o=jsonpath='{.spec.identity_provider}')"
-
-kpt cfg set asm gcloud.core.project ${ENVIRON_PROJECT_ID}
-kpt cfg set asm gcloud.container.cluster ${CLUSTER_NAME}
-kpt cfg set asm gcloud.compute.location ${CLUSTER_LOCATION}
-kpt cfg set asm anthos.servicemesh.hub gcr.io/gke-release/asm
-kpt cfg set asm anthos.servicemesh.rev asm-1106-2
-kpt cfg set asm anthos.servicemesh.tag 1.10.6-asm.2
-kpt cfg set asm gcloud.project.environProjectNumber ${ENVIRON_PROJECT_NUMBER}
-kpt cfg set asm anthos.servicemesh.hubTrustDomain ${ENVIRON_PROJECT_ID}.svc.id.goog
-kpt cfg set asm anthos.servicemesh.hub-idp-url "${HUB_IDP_URL}"
+download_asm() {
+  cd $APIGEE_WORKSPACE
+  curl https://storage.googleapis.com/csm-artifacts/asm/asmcli_1.12 > asmcli
+  chmod +x asmcli
 
 }
 
 install_asm() {
 
-  bin/istioctl install -y  \
-  -f asm/istio/istio-operator.yaml \
-  -f asm/istio/options/hub-meshca.yaml --revision=asm-1106-2
+cd $APIGEE_WORKSPACE
+fleet_id=$(gcloud config get-value project)
+echo $KUBECONFIG
+echo $fleet_id
+
+./asmcli install --fleet_id ${fleet_id} --kubeconfig $KUBECONFIG --output_dir .  --custom_overlay overlay.yaml  --platform multicloud  --enable_all  --option legacy-default-ingressgateway
 
 }
 
-post_install_asm() {
+create_overlay_asm() {
 
-cat <<EOF > istiod-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
- name: istiod
- namespace: istio-system
- labels:
-   istio.io/rev: asm-1106-2
-   app: istiod
-   istio: pilot
-   release: istio
+cd $APIGEE_WORKSPACE
+cat <<EOF > overlay.yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
 spec:
- ports:
-   - port: 15010
-     name: grpc-xds # plaintext
-     protocol: TCP
-   - port: 15012
-     name: https-dns # mTLS with k8s-signed cert
-     protocol: TCP
-   - port: 443
-     name: https-webhook # validation and injection
-     targetPort: 15017
-     protocol: TCP
-   - port: 15014
-     name: http-monitoring # prometheus stats
-     protocol: TCP
- selector:
-   app: istiod
-   istio.io/rev: asm-1106-2
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          nodeSelector:
+            # default node selector, if different or not using node selectors, change accordingly.
+            #cloud.google.com/gke-nodepool: apigee-runtime
+          resources:
+            requests:
+              cpu: 1000m
+          service:
+            type: LoadBalancer
+            ports:
+              - name: http-status-port
+                port: 15021
+              - name: http2
+                port: 80
+                targetPort: 8080
+              - name: https
+                port: 443
+                targetPort: 8443
+  meshConfig:
+    accessLogFormat:
+      '{"start_time":"%START_TIME%","remote_address":"%DOWNSTREAM_DIRECT_REMOTE_ADDRESS%","user_agent":"%REQ(USER-AGENT)%","host":"%REQ(:AUTHORITY)%","request":"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%","request_time":"%DURATION%","status":"%RESPONSE_CODE%","status_details":"%RESPONSE_CODE_DETAILS%","bytes_received":"%BYTES_RECEIVED%","bytes_sent":"%BYTES_SENT%","upstream_address":"%UPSTREAM_HOST%","upstream_response_flags":"%RESPONSE_FLAGS%","upstream_response_time":"%RESPONSE_DURATION%","upstream_service_time":"%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%","upstream_cluster":"%UPSTREAM_CLUSTER%","x_forwarded_for":"%REQ(X-FORWARDED-FOR)%","request_method":"%REQ(:METHOD)%","request_path":"%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%","request_protocol":"%PROTOCOL%","tls_protocol":"%DOWNSTREAM_TLS_VERSION%","request_id":"%REQ(X-REQUEST-ID)%","sni_host":"%REQUESTED_SERVER_NAME%","apigee_dynamic_data":"%DYNAMIC_METADATA(envoy.lua)%"}'
 EOF
 }
 
@@ -165,7 +125,7 @@ export VERSION=$(curl -s \
 	    https://storage.googleapis.com/apigee-release/hybrid/apigee-hybrid-setup/current-version.txt?ignoreCache=1)
 
 #Pinning down to previous version because 1.7 has some issues
-export VERSION="1.6.6"
+export VERSION="1.7.3"
 
 curl -LO \
 	    https://storage.googleapis.com/apigee-release/hybrid/apigee-hybrid-setup/$VERSION/apigeectl_linux_64.tar.gz
@@ -192,7 +152,7 @@ setup_project_directory() {
 	ln -s $APIGEECTL_HOME/plugins plugins
 	#Lets do cleaup first
 	export PROJECT_ID=$(gcloud config get-value project)
-	gcloud iam service-accounts delete  apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
+	#gcloud iam service-accounts delete  apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
 	echo 'y' | ./tools/create-service-account --env non-prod --dir ./service-accounts
 	#gcloud iam service-accounts keys create ./service-accounts/$PROJECT_ID-apigee-non-prod.json --iam-account=apigee-non-prod@$PROJECT_ID.iam.gserviceaccount.com --quiet
 	export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -223,7 +183,7 @@ setup_org_env() {
   	"https://apigee.googleapis.com/v1/organizations?parent=projects/$PROJECT_ID"
 
 	echo "Waiting for initial 60 seconds ...."
-	sleep 60
+	sleep 10
 
 	operations_id=$(cat org.json | jq -r .name | awk -F "/" '{print $NF}')
         wait_for_active $operations_id
@@ -269,7 +229,7 @@ setup_org_env() {
 patch_standard_storageclass() {
 
 
-	kubectl patch storageclass standard \
+	kubectl patch storageclass local-shared \
 		  -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 }
 
@@ -281,12 +241,13 @@ prepare_overrides_files() {
 	sudo mv yq_linux_amd64 /usr/local/bin/yq
 	cp apigeectl/examples/overrides-small.yaml hybrid-files/overrides/overrides.yaml
 	cd hybrid-files/overrides/
+	sed -i '/hostNetwork: false/a \ \ replicaCount: 3' overrides.yaml
 	yq -i '.gcp.projectID = env(PROJECT_ID)' overrides.yaml
 	yq -i '.org = env(PROJECT_ID)' overrides.yaml
 	yq -i '.k8sCluster.name = "apigee-hybrid"' overrides.yaml
 	yq -i '.k8sCluster.region = "us-central1-a"' overrides.yaml
 	yq -i '.instanceID = "apigee-hybrid-demo"' overrides.yaml
-	yq -i '.cassandra.hostNetwork = false' overrides.yaml
+	yq -i '.cassandra.hostNetwork = true' overrides.yaml
 	yq -i 'del(.virtualhosts.[].sslSecret)' overrides.yaml
 	yq -i '.virtualhosts.[].name = "default-test"' overrides.yaml
 	yq -i '.virtualhosts.[].sslCertPath = "./certs/keystore.pem"' overrides.yaml
@@ -303,6 +264,7 @@ prepare_overrides_files() {
 	yq -i '.connectAgent.serviceAccountPath = env(SVC_ACCOUNT)' overrides.yaml
 	yq -i '.watcher.serviceAccountPath = env(SVC_ACCOUNT)' overrides.yaml
 	yq e '{"udca" : {"serviceAccountPath" : env(SVC_ACCOUNT)}}'  overrides.yaml >> overrides.yaml
+	yq e '{"logger" : {"serviceAccountPath" : env(SVC_ACCOUNT)}}'  overrides.yaml >> overrides.yaml
 
 
 }
@@ -351,7 +313,7 @@ install_runtime() {
 	kubectl create namespace apigee
 	kubectl create namespace apigee-system
         ${APIGEECTL_HOME}/apigeectl init -f overrides/overrides.yaml
-	sleep 30
+	wait_for_apigee_ready
         ${APIGEECTL_HOME}/apigeectl apply -f overrides/overrides.yaml
 	wait_for_apigee_ready
 
@@ -361,13 +323,10 @@ install_runtime() {
 create_workspace
 enable_services
 enable_apigee_services
-install_kpt
 install_cert_manager
 download_asm
-initialize_mesh
-configure_mesh
+create_overlay_asm
 install_asm
-post_install_asm
 install_apigee_ctl
 setup_project_directory
 setup_org_env

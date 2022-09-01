@@ -137,7 +137,6 @@ variable "anthos_service_account_name" {
   default     = "baremetal-gcr"
 }
 
-
 variable "primary_apis" {
   description = "List of primary Google Cloud APIs to be enabled for this deployment"
   type        = list(string)
@@ -162,7 +161,8 @@ variable "secondary_apis" {
     "iam.googleapis.com",
     "compute.googleapis.com",
     "anthosaudit.googleapis.com",
-    "opsconfigmonitoring.googleapis.com"
+    "opsconfigmonitoring.googleapis.com",
+    "file.googleapis.com"
   ]
 }
 
@@ -185,7 +185,6 @@ variable "admin_vm_service_account" {
 }
 
 variable "mode" {
-  type        = string
   description = <<EOF
     Indication of the execution mode. By default the terraform execution will end
     after setting up the GCE VMs where the Anthos bare metal clusters can be deployed.
@@ -193,13 +192,22 @@ variable "mode" {
     **setup:** create and initialize the GCE VMs required to install Anthos bare metal.
 
     **install:** everything up to 'setup' mode plus automatically run Anthos bare metal installation steps as well.
+
+    **manuallb:** similar to 'install' mode but Anthos on bare metal is installed with ManualLB mode.
   EOF
+  type        = string
   default     = "setup"
 
   validation {
-    condition     = contains(["setup", "install"], var.mode)
-    error_message = "Allowed execution modes are: setup, install."
+    condition     = contains(["setup", "install", "manuallb"], var.mode)
+    error_message = "Allowed execution modes are: setup, install, manuallb."
   }
+}
+
+variable "nfs_server" {
+  description = "Provision a Google Filestore instance for NFS shared storage"
+  type        = bool
+  default     = false
 }
 
 # [START anthosbaremetal_node_prefix]
