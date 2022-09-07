@@ -19,4 +19,4 @@ This repository contains code samples for [Apigee on Anthos](https://cloud.googl
 
 ---
 ### Releases
-Please read the [Release Guidelines](/.github/release.md) document for details on how releases are managed for this repository.
+
